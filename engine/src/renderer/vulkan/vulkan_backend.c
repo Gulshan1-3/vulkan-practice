@@ -1,6 +1,14 @@
 #include "vulkan_backend.h"
 #include "vulkan_backend.inl"
-#include "../../src/core/logger.h"
+#include "../../../src/core/logger.h"
+
+#include "vulkan_platform.h"
+
+
+#include "../../../src/core/kstring.h"
+#include "../../../src/containers/darray.h"
+#include "../../../src/platform/platform.h"
+
 
 
 // static Vulkan context

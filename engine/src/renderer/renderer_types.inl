@@ -22,3 +22,8 @@ typedef struct renderer_backend {
 } renderer_backend;
 
 
+typedef struct render_packet {
+    f32 delta_time;
+} render_packet;
+
+
