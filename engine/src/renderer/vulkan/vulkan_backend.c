@@ -14,6 +14,12 @@
 // static Vulkan context
 static vulkan_context context;
 
+VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+    VkDebugUtilsMessageTypeFlagsEXT message_types,
+    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+    void* user_data);
+
 
 b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* application_name, struct platform_state* plat_state) {
 
@@ -119,7 +125,7 @@ KINFO("Vulkan Instance created.");
     debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
     debug_create_info.pfnUserCallback = vk_debug_callback;
     PFN_vkCreateDebugUtilsMessengerEXT func =
-        (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context.instance, "vkCreateDebugUtilsMessengerEXT");
+    (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context.instance, "vkCreateDebugUtilsMessengerEXT");
     KASSERT_MSG(func, "Failed to create debug messenger!");
     VK_CHECK(func(context.instance, &debug_create_info, context.allocator, &context.debug_messenger));
     KDEBUG("Vulkan debugger created.");
@@ -132,6 +138,16 @@ KINFO("Vulkan Instance created.");
 
 
 void vulkan_renderer_backend_shutdown(renderer_backend* backend) {
+    #if defined(_DEBUG) 
+    KDEBUG("Destroying Vulkan debugger...");
+    if (context.debug_messenger) {
+        PFN_vkDestroyDebugUtilsMessengerEXT func =
+            (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context.instance, "vkDestroyDebugUtilsMessengerEXT");
+        func(context.instance, context.debug_messenger, context.allocator);
+    }
+    KDEBUG("Destroying Vulkan instance...");
+    vkDestroyInstance(context.instance, context.allocator);
+    #endif
 }
 
 
@@ -145,3 +161,26 @@ b8 vulkan_renderer_backend_begin_frame(renderer_backend* backend, f32 delta_time
 b8 vulkan_renderer_backend_end_frame(renderer_backend* backend, f32 delta_time) {
     return TRUE;
 }
+
+VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+    VkDebugUtilsMessageTypeFlagsEXT message_types,
+    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+    void* user_data) {
+    switch (message_severity) {
+        default:
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            KERROR(callback_data->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            KWARN(callback_data->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            KINFO(callback_data->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            KTRACE(callback_data->pMessage);
+            break;
+    }
+    return VK_FALSE;
+    }

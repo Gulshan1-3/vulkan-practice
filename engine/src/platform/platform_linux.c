@@ -1,5 +1,6 @@
 #include "platform.h"
 #include "../../src/core/input.h"
+#include "../../src/containers/darray.h"
 // Linux platform layer.
 #if KPLATFORM_LINUX
 
