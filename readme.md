@@ -8,6 +8,3 @@ Roadmap(Travis):
 
 Roadmap(me):
 - [ ] Plan 1  : Time Travel and Time manipulation
-- [ ] Plan 2  : FInd an idea to implement ZKP
-- [ ] Plan 3  : Emotion-Driven Rendering Engine
-- [ ] Plan 4  : Quantum Reality
